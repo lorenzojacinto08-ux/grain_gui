@@ -70,17 +70,17 @@ export default function Dashboard() {
   }
 
   const { data: dashboardStats } = useSWR("/api/dashboard/stats", fetcher)
-  const { data: dashboardFarmAreas } = useSWR("/api/dashboard/farm-areas", fetcher)
-  const { data: soilDistribution } = useSWR("/api/dashboard/soil-distribution", fetcher)
+  const { data: dashboardFarmAreas = [] } = useSWR("/api/dashboard/farm-areas", fetcher)
+  const { data: soilDistribution = [] } = useSWR("/api/dashboard/soil-distribution", fetcher)
 
   const { data: userStats } = useSWR("/api/users/stats", fetcher)
-  const { data: users } = useSWR("/api/users", fetcher)
+  const { data: users = [] } = useSWR("/api/users", fetcher)
 
   const { data: farmAreaStats } = useSWR("/api/farm-areas/stats", fetcher)
-  const { data: farmAreas } = useSWR("/api/farm-areas", fetcher)
+  const { data: farmAreas = [] } = useSWR("/api/farm-areas", fetcher)
 
   const { data: approvalStats } = useSWR("/api/approvals/stats", fetcher)
-  const { data: approvals, mutate: mutateApprovals } = useSWR("/api/approvals", fetcher)
+  const { data: approvals = [], mutate: mutateApprovals } = useSWR("/api/approvals", fetcher)
   const { mutate: mutateApprovalStats } = useSWR("/api/approvals/stats", fetcher)
 
   const renderDashboard = () => (
@@ -205,48 +205,56 @@ export default function Dashboard() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {dashboardFarmAreas?.map((area: any) => (
-                  <TableRow key={area.area_id} className="border-border hover:bg-secondary/50">
-                    <TableCell className="font-medium text-foreground">{area.area_name}</TableCell>
-                    <TableCell className="text-muted-foreground">{area.region}</TableCell>
-                    <TableCell className="text-muted-foreground">{area.province}</TableCell>
-                    <TableCell className="text-muted-foreground">{area.organization}</TableCell>
-                    <TableCell className="text-muted-foreground">{area.slope}°</TableCell>
-                    <TableCell className="text-muted-foreground">{area.elevation}m</TableCell>
-                    <TableCell>
-                      <Badge
-                        variant="outline"
-                        className={
-                          area.approval_status === "Approved"
-                            ? "bg-green-500/10 text-green-500 border-green-500/20"
-                            : area.approval_status === "Rejected"
-                              ? "bg-red-500/10 text-red-500 border-red-500/20"
-                              : "bg-amber-500/10 text-amber-500 border-amber-500/20"
-                        }
-                      >
-                        {area.approval_status || "Pending"}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex space-x-2">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8 text-muted-foreground hover:text-foreground"
+                {dashboardFarmAreas.length > 0 ? (
+                  dashboardFarmAreas.map((area: any) => (
+                    <TableRow key={area.area_id} className="border-border hover:bg-secondary/50">
+                      <TableCell className="font-medium text-foreground">{area.area_name}</TableCell>
+                      <TableCell className="text-muted-foreground">{area.region}</TableCell>
+                      <TableCell className="text-muted-foreground">{area.province}</TableCell>
+                      <TableCell className="text-muted-foreground">{area.organization}</TableCell>
+                      <TableCell className="text-muted-foreground">{area.slope}°</TableCell>
+                      <TableCell className="text-muted-foreground">{area.elevation}m</TableCell>
+                      <TableCell>
+                        <Badge
+                          variant="outline"
+                          className={
+                            area.approval_status === "Approved"
+                              ? "bg-green-500/10 text-green-500 border-green-500/20"
+                              : area.approval_status === "Rejected"
+                                ? "bg-red-500/10 text-red-500 border-red-500/20"
+                                : "bg-amber-500/10 text-amber-500 border-amber-500/20"
+                          }
                         >
-                          <Edit className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8 text-muted-foreground hover:text-foreground"
-                        >
-                          <Trash className="h-4 w-4" />
-                        </Button>
-                      </div>
+                          {area.approval_status || "Pending"}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex space-x-2">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 text-muted-foreground hover:text-foreground"
+                          >
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 text-muted-foreground hover:text-foreground"
+                          >
+                            <Trash className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                ) : (
+                  <TableRow>
+                    <TableCell colSpan={8} className="text-center text-muted-foreground py-8">
+                      No farm areas found. Add your first area to get started.
                     </TableCell>
                   </TableRow>
-                ))}
+                )}
               </TableBody>
             </Table>
           </div>
@@ -261,18 +269,22 @@ export default function Dashboard() {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {soilDistribution?.map((soil: any, index: number) => {
-                const total = soilDistribution.reduce((sum: number, s: any) => sum + s.count, 0)
-                return (
-                  <div key={index}>
-                    <div className="flex justify-between text-sm mb-2">
-                      <span className="text-foreground">{soil.soil_type}</span>
-                      <span className="text-muted-foreground">{soil.count} areas</span>
+              {soilDistribution.length > 0 ? (
+                soilDistribution.map((soil: any, index: number) => {
+                  const total = soilDistribution.reduce((sum: number, s: any) => sum + s.count, 0)
+                  return (
+                    <div key={index}>
+                      <div className="flex justify-between text-sm mb-2">
+                        <span className="text-foreground">{soil.soil_type}</span>
+                        <span className="text-muted-foreground">{soil.count} areas</span>
+                      </div>
+                      <Progress value={(soil.count / total) * 100} className="h-2" />
                     </div>
-                    <Progress value={(soil.count / total) * 100} className="h-2" />
-                  </div>
-                )
-              })}
+                  )
+                })
+              ) : (
+                <p className="text-sm text-muted-foreground text-center py-4">No soil data available</p>
+              )}
             </div>
           </CardContent>
         </Card>
@@ -412,46 +424,54 @@ export default function Dashboard() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {users?.map((user: any) => (
-                  <TableRow key={user.user_id} className="border-border hover:bg-secondary/50">
-                    <TableCell className="font-medium text-foreground">{user.name}</TableCell>
-                    <TableCell className="text-muted-foreground">{user.email}</TableCell>
-                    <TableCell className="text-muted-foreground">{user.contact}</TableCell>
-                    <TableCell>
-                      <Badge
-                        variant="outline"
-                        className={
-                          user.user_type === "Admin"
-                            ? "bg-purple-500/10 text-purple-500 border-purple-500/20"
-                            : "bg-green-500/10 text-green-500 border-green-500/20"
-                        }
-                      >
-                        {user.user_type}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-muted-foreground">
-                      {new Date(user.created_at).toLocaleDateString()}
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex space-x-2">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8 text-muted-foreground hover:text-foreground"
+                {users.length > 0 ? (
+                  users.map((user: any) => (
+                    <TableRow key={user.user_id} className="border-border hover:bg-secondary/50">
+                      <TableCell className="font-medium text-foreground">{user.name}</TableCell>
+                      <TableCell className="text-muted-foreground">{user.email}</TableCell>
+                      <TableCell className="text-muted-foreground">{user.contact}</TableCell>
+                      <TableCell>
+                        <Badge
+                          variant="outline"
+                          className={
+                            user.user_type === "Admin"
+                              ? "bg-purple-500/10 text-purple-500 border-purple-500/20"
+                              : "bg-green-500/10 text-green-500 border-green-500/20"
+                          }
                         >
-                          <Edit className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8 text-muted-foreground hover:text-foreground"
-                        >
-                          <Trash className="h-4 w-4" />
-                        </Button>
-                      </div>
+                          {user.user_type}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="text-muted-foreground">
+                        {new Date(user.created_at).toLocaleDateString()}
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex space-x-2">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 text-muted-foreground hover:text-foreground"
+                          >
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 text-muted-foreground hover:text-foreground"
+                          >
+                            <Trash className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                ) : (
+                  <TableRow>
+                    <TableCell colSpan={6} className="text-center text-muted-foreground py-8">
+                      No users found.
                     </TableCell>
                   </TableRow>
-                ))}
+                )}
               </TableBody>
             </Table>
           </div>
@@ -573,56 +593,64 @@ export default function Dashboard() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {farmAreas?.map((area: any) => (
-                  <TableRow key={area.area_id} className="border-border hover:bg-secondary/50">
-                    <TableCell className="text-muted-foreground">{area.area_id}</TableCell>
-                    <TableCell className="font-medium text-foreground">{area.area_name}</TableCell>
-                    <TableCell className="text-muted-foreground">{area.region}</TableCell>
-                    <TableCell className="text-muted-foreground">{area.province}</TableCell>
-                    <TableCell className="text-muted-foreground">{area.organization}</TableCell>
-                    <TableCell className="text-muted-foreground">{area.slope}°</TableCell>
-                    <TableCell className="text-muted-foreground">{area.elevation}m</TableCell>
-                    <TableCell>
-                      <Badge
-                        variant="outline"
-                        className={
-                          area.approval_status === "Approved"
-                            ? "bg-green-500/10 text-green-500 border-green-500/20"
-                            : area.approval_status === "Rejected"
-                              ? "bg-red-500/10 text-red-500 border-red-500/20"
-                              : "bg-amber-500/10 text-amber-500 border-amber-500/20"
-                        }
-                      >
-                        {area.approval_status || "Pending"}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex space-x-2">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8 text-muted-foreground hover:text-foreground"
+                {farmAreas.length > 0 ? (
+                  farmAreas.map((area: any) => (
+                    <TableRow key={area.area_id} className="border-border hover:bg-secondary/50">
+                      <TableCell className="text-muted-foreground">{area.area_id}</TableCell>
+                      <TableCell className="font-medium text-foreground">{area.area_name}</TableCell>
+                      <TableCell className="text-muted-foreground">{area.region}</TableCell>
+                      <TableCell className="text-muted-foreground">{area.province}</TableCell>
+                      <TableCell className="text-muted-foreground">{area.organization}</TableCell>
+                      <TableCell className="text-muted-foreground">{area.slope}°</TableCell>
+                      <TableCell className="text-muted-foreground">{area.elevation}m</TableCell>
+                      <TableCell>
+                        <Badge
+                          variant="outline"
+                          className={
+                            area.approval_status === "Approved"
+                              ? "bg-green-500/10 text-green-500 border-green-500/20"
+                              : area.approval_status === "Rejected"
+                                ? "bg-red-500/10 text-red-500 border-red-500/20"
+                                : "bg-amber-500/10 text-amber-500 border-amber-500/20"
+                          }
                         >
-                          <Eye className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8 text-muted-foreground hover:text-foreground"
-                        >
-                          <Edit className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8 text-muted-foreground hover:text-foreground"
-                        >
-                          <Trash className="h-4 w-4" />
-                        </Button>
-                      </div>
+                          {area.approval_status || "Pending"}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex space-x-2">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 text-muted-foreground hover:text-foreground"
+                          >
+                            <Eye className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 text-muted-foreground hover:text-foreground"
+                          >
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 text-muted-foreground hover:text-foreground"
+                          >
+                            <Trash className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                ) : (
+                  <TableRow>
+                    <TableCell colSpan={9} className="text-center text-muted-foreground py-8">
+                      No farm areas found.
                     </TableCell>
                   </TableRow>
-                ))}
+                )}
               </TableBody>
             </Table>
           </div>
@@ -739,63 +767,71 @@ export default function Dashboard() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {approvals?.map((approval: any) => (
-                  <TableRow key={approval.approval_id} className="border-border hover:bg-secondary/50">
-                    <TableCell className="text-muted-foreground">{approval.area_id}</TableCell>
-                    <TableCell className="font-medium text-foreground">{approval.area_name}</TableCell>
-                    <TableCell className="text-muted-foreground">{approval.region}</TableCell>
-                    <TableCell className="text-muted-foreground">{approval.province}</TableCell>
-                    <TableCell className="text-muted-foreground">{approval.organization}</TableCell>
-                    <TableCell className="text-muted-foreground">
-                      {new Date(approval.created_at).toLocaleDateString()}
-                    </TableCell>
-                    <TableCell>
-                      <Badge
-                        variant="outline"
-                        className={
-                          approval.status === "Approved"
-                            ? "bg-green-500/10 text-green-500 border-green-500/20"
-                            : approval.status === "Rejected"
-                              ? "bg-red-500/10 text-red-500 border-red-500/20"
-                              : "bg-amber-500/10 text-amber-500 border-amber-500/20"
-                        }
-                      >
-                        {approval.status}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex space-x-2">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8 text-muted-foreground hover:text-foreground"
+                {approvals.length > 0 ? (
+                  approvals.map((approval: any) => (
+                    <TableRow key={approval.approval_id} className="border-border hover:bg-secondary/50">
+                      <TableCell className="text-muted-foreground">{approval.area_id}</TableCell>
+                      <TableCell className="font-medium text-foreground">{approval.area_name}</TableCell>
+                      <TableCell className="text-muted-foreground">{approval.region}</TableCell>
+                      <TableCell className="text-muted-foreground">{approval.province}</TableCell>
+                      <TableCell className="text-muted-foreground">{approval.organization}</TableCell>
+                      <TableCell className="text-muted-foreground">
+                        {new Date(approval.created_at).toLocaleDateString()}
+                      </TableCell>
+                      <TableCell>
+                        <Badge
+                          variant="outline"
+                          className={
+                            approval.status === "Approved"
+                              ? "bg-green-500/10 text-green-500 border-green-500/20"
+                              : approval.status === "Rejected"
+                                ? "bg-red-500/10 text-red-500 border-red-500/20"
+                                : "bg-amber-500/10 text-amber-500 border-amber-500/20"
+                          }
                         >
-                          <Eye className="h-4 w-4" />
-                        </Button>
-                        {approval.status === "Pending" && (
-                          <>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="h-8 w-8 text-green-500 hover:text-green-600 hover:bg-green-500/10"
-                              onClick={() => handleApprovalUpdate(approval.approval_id, "Approved")}
-                            >
-                              <CheckCircle className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="h-8 w-8 text-red-500 hover:text-red-600 hover:bg-red-500/10"
-                              onClick={() => handleApprovalUpdate(approval.approval_id, "Rejected")}
-                            >
-                              <XCircle className="h-4 w-4" />
-                            </Button>
-                          </>
-                        )}
-                      </div>
+                          {approval.status}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex space-x-2">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 text-muted-foreground hover:text-foreground"
+                          >
+                            <Eye className="h-4 w-4" />
+                          </Button>
+                          {approval.status === "Pending" && (
+                            <>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-8 w-8 text-green-500 hover:text-green-600 hover:bg-green-500/10"
+                                onClick={() => handleApprovalUpdate(approval.approval_id, "Approved")}
+                              >
+                                <CheckCircle className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-8 w-8 text-red-500 hover:text-red-600 hover:bg-red-500/10"
+                                onClick={() => handleApprovalUpdate(approval.approval_id, "Rejected")}
+                              >
+                                <XCircle className="h-4 w-4" />
+                              </Button>
+                            </>
+                          )}
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                ) : (
+                  <TableRow>
+                    <TableCell colSpan={8} className="text-center text-muted-foreground py-8">
+                      No pending approvals.
                     </TableCell>
                   </TableRow>
-                ))}
+                )}
               </TableBody>
             </Table>
           </div>
