@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react"
 import useSWR from "swr"
+import { useRouter } from "next/navigation"
 import {
   LucideBarChart,
   Search,
@@ -22,6 +23,8 @@ import {
   Eye,
   XCircle,
   Clock,
+  LogOut,
+  Map,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -33,7 +36,18 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json())
 
-export default function Dashboard() {
+interface DashboardProps {
+  user: {
+    user_id: number
+    email: string
+    name: string
+    user_type: "Admin" | "User"
+    contact: string
+  }
+}
+
+export default function Dashboard({ user }: DashboardProps) {
+  const router = useRouter()
   const [activeSection, setActiveSection] = useState("dashboard")
   const [isMobile, setIsMobile] = useState(false)
   const [sidebarOpen, setSidebarOpen] = useState(false)
@@ -50,6 +64,16 @@ export default function Dashboard() {
       window.removeEventListener("resize", handleResize)
     }
   }, [])
+
+  const handleLogout = async () => {
+    try {
+      await fetch("/api/auth/logout", { method: "POST" })
+      router.push("/login")
+      router.refresh()
+    } catch (error) {
+      console.error("[v0] Logout error:", error)
+    }
+  }
 
   const handleApprovalUpdate = async (approvalId: number, status: string) => {
     try {
@@ -840,6 +864,25 @@ export default function Dashboard() {
     </>
   )
 
+  const renderMaps = () => (
+    <div className="flex items-center justify-center h-full">
+      <Card className="w-full max-w-md bg-card border-border">
+        <CardHeader>
+          <CardTitle className="text-foreground">Maps Coming Soon</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-muted-foreground">
+            The Maps module with GPS coordinates and area visualization is currently being built. Please check back
+            later.
+          </p>
+          <Button onClick={() => setActiveSection("dashboard")} className="mt-4 bg-primary hover:bg-primary/90">
+            Return to Dashboard
+          </Button>
+        </CardContent>
+      </Card>
+    </div>
+  )
+
   return (
     <div className="flex h-screen bg-background">
       {/* Mobile Sidebar Toggle */}
@@ -904,25 +947,16 @@ export default function Dashboard() {
               <CheckCircle className="mr-3 h-5 w-5" />
               Approvals
             </button>
+            {/* Harvest Data removed from sidebar */}
             <button
               onClick={() => {
-                setActiveSection("harvests")
+                setActiveSection("maps")
                 if (isMobile) setSidebarOpen(false)
               }}
-              className={`flex items-center w-full px-4 py-3 text-sm font-medium rounded-md transition-colors ${activeSection === "harvests" ? "text-primary bg-primary/10" : "text-muted-foreground hover:bg-secondary hover:text-foreground"}`}
+              className={`flex items-center w-full px-4 py-3 text-sm font-medium rounded-md transition-colors ${activeSection === "maps" ? "text-primary bg-primary/10" : "text-muted-foreground hover:bg-secondary hover:text-foreground"}`}
             >
-              <Sprout className="mr-3 h-5 w-5" />
-              Harvest Data
-            </button>
-            <button
-              onClick={() => {
-                setActiveSection("topography")
-                if (isMobile) setSidebarOpen(false)
-              }}
-              className={`flex items-center w-full px-4 py-3 text-sm font-medium rounded-md transition-colors ${activeSection === "topography" ? "text-primary bg-primary/10" : "text-muted-foreground hover:bg-secondary hover:text-foreground"}`}
-            >
-              <Mountain className="mr-3 h-5 w-5" />
-              Topography
+              <Map className="mr-3 h-5 w-5" />
+              Maps
             </button>
             <button
               onClick={() => {
@@ -948,6 +982,9 @@ export default function Dashboard() {
                 <Menu className="h-5 w-5" />
               </Button>
             )}
+            <div className="text-sm text-muted-foreground">
+              Welcome, <span className="font-medium text-foreground">{user.name}</span>
+            </div>
           </div>
           <div className="flex items-center space-x-4">
             <Button variant="ghost" size="icon" className="relative text-muted-foreground hover:text-foreground">
@@ -960,14 +997,19 @@ export default function Dashboard() {
                 <Button variant="ghost" className="relative h-8 w-8 rounded-full">
                   <Avatar className="h-8 w-8">
                     <AvatarImage src="/placeholder.svg?height=32&width=32" alt="User" />
-                    <AvatarFallback className="bg-primary text-primary-foreground">A</AvatarFallback>
+                    <AvatarFallback className="bg-primary text-primary-foreground">
+                      {user.name.charAt(0).toUpperCase()}
+                    </AvatarFallback>
                   </Avatar>
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="bg-popover border-border">
                 <DropdownMenuItem>Profile</DropdownMenuItem>
                 <DropdownMenuItem>Settings</DropdownMenuItem>
-                <DropdownMenuItem>Logout</DropdownMenuItem>
+                <DropdownMenuItem onClick={handleLogout} className="text-red-500">
+                  <LogOut className="mr-2 h-4 w-4" />
+                  Logout
+                </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
@@ -979,10 +1021,12 @@ export default function Dashboard() {
           {activeSection === "users" && renderUsers()}
           {activeSection === "areas" && renderFarmAreas()}
           {activeSection === "approvals" && renderApprovals()}
+          {activeSection === "maps" && renderMaps()}
           {activeSection !== "dashboard" &&
             activeSection !== "users" &&
             activeSection !== "areas" &&
-            activeSection !== "approvals" && (
+            activeSection !== "approvals" &&
+            activeSection !== "maps" && (
               <div className="flex items-center justify-center h-full">
                 <Card className="w-full max-w-md bg-card border-border">
                   <CardHeader>
