@@ -23,30 +23,18 @@ import {
   Eye,
   XCircle,
   Clock,
-  LogOut,
   Map,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Progress } from "@/components/ui/progress"
 import { Badge } from "@/components/ui/badge"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json())
 
-interface DashboardProps {
-  user: {
-    user_id: number
-    email: string
-    name: string
-    user_type: "Admin" | "User"
-    contact: string
-  }
-}
-
-export default function Dashboard({ user }: DashboardProps) {
+export default function Dashboard() {
   const router = useRouter()
   const [activeSection, setActiveSection] = useState("dashboard")
   const [isMobile, setIsMobile] = useState(false)
@@ -65,16 +53,6 @@ export default function Dashboard({ user }: DashboardProps) {
     }
   }, [])
 
-  const handleLogout = async () => {
-    try {
-      await fetch("/api/auth/logout", { method: "POST" })
-      router.push("/login")
-      router.refresh()
-    } catch (error) {
-      console.error("[v0] Logout error:", error)
-    }
-  }
-
   const handleApprovalUpdate = async (approvalId: number, status: string) => {
     try {
       const response = await fetch(`/api/approvals/${approvalId}`, {
@@ -89,7 +67,7 @@ export default function Dashboard({ user }: DashboardProps) {
         mutateApprovalStats()
       }
     } catch (error) {
-      console.error("[v0] Error updating approval:", error)
+      console.error("Error updating approval:", error)
     }
   }
 
@@ -983,7 +961,7 @@ export default function Dashboard({ user }: DashboardProps) {
               </Button>
             )}
             <div className="text-sm text-muted-foreground">
-              Welcome, <span className="font-medium text-foreground">{user.name}</span>
+              <span className="font-medium text-foreground">Farm Management System</span>
             </div>
           </div>
           <div className="flex items-center space-x-4">
@@ -992,26 +970,10 @@ export default function Dashboard({ user }: DashboardProps) {
               <span className="absolute top-1 right-1 h-2 w-2 bg-green-500 rounded-full"></span>
             </Button>
 
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="relative h-8 w-8 rounded-full">
-                  <Avatar className="h-8 w-8">
-                    <AvatarImage src="/placeholder.svg?height=32&width=32" alt="User" />
-                    <AvatarFallback className="bg-primary text-primary-foreground">
-                      {user.name.charAt(0).toUpperCase()}
-                    </AvatarFallback>
-                  </Avatar>
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="bg-popover border-border">
-                <DropdownMenuItem>Profile</DropdownMenuItem>
-                <DropdownMenuItem>Settings</DropdownMenuItem>
-                <DropdownMenuItem onClick={handleLogout} className="text-red-500">
-                  <LogOut className="mr-2 h-4 w-4" />
-                  Logout
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+            <Avatar className="h-8 w-8">
+              <AvatarImage src="/placeholder.svg?height=32&width=32" alt="User" />
+              <AvatarFallback className="bg-primary text-primary-foreground">U</AvatarFallback>
+            </Avatar>
           </div>
         </header>
 
